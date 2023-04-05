@@ -1,4 +1,3 @@
-import 'package:analyzer/dart/element/element.dart' show ParameterElement;
 import 'package:code_builder/code_builder.dart' as _code;
 
 import 'importable_type.dart';
@@ -27,15 +26,13 @@ class ParamConfig {
   final bool isRequired;
   final bool isNamed;
   final bool isPathParam;
+  final bool isInheritedPathParam;
   final bool isQueryParam;
   final String? defaultValueCode;
-  final ParameterElement element;
-  final bool isInheritedPathParam;
 
   ParamConfig({
     required this.type,
     required this.name,
-    required this.element,
     required this.isNamed,
     required this.isPositional,
     required this.hasRequired,
@@ -74,6 +71,44 @@ class ParamConfig {
   }
 
   String get paramName => alias ?? name;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': this.type.toJson(),
+      'name': this.name,
+      'alias': this.alias,
+      'isPositional': this.isPositional,
+      'isOptional': this.isOptional,
+      'hasRequired': this.hasRequired,
+      'isRequired': this.isRequired,
+      'isNamed': this.isNamed,
+      'isPathParam': this.isPathParam,
+      'isInheritedPathParam': this.isInheritedPathParam,
+      'isQueryParam': this.isQueryParam,
+      'defaultValueCode': this.defaultValueCode,
+    };
+  }
+
+  factory ParamConfig.fromJson(Map<String, dynamic> map) {
+    if (map['isFunctionParam'] == true) {
+      return FunctionParamConfig.fromJson(map);
+    }
+
+    return ParamConfig(
+      type: ResolvedType.fromJson(map['type']),
+      name: map['name'] as String,
+      alias: map['alias'] as String?,
+      isPositional: map['isPositional'] as bool,
+      isOptional: map['isOptional'] as bool,
+      hasRequired: map['hasRequired'] as bool,
+      isRequired: map['isRequired'] as bool,
+      isNamed: map['isNamed'] as bool,
+      isPathParam: map['isPathParam'] as bool,
+      isInheritedPathParam: map['isInheritedPathParam'] as bool,
+      isQueryParam: map['isQueryParam'] as bool,
+      defaultValueCode: map['defaultValueCode'] as String?,
+    );
+  }
 }
 
 class FunctionParamConfig extends ParamConfig {
@@ -90,7 +125,6 @@ class FunctionParamConfig extends ParamConfig {
     required bool hasRequired,
     required bool isOptional,
     required bool isNamed,
-    required ParameterElement element,
     required bool isRequired,
     String? defaultValueCode,
   }) : super(
@@ -99,15 +133,56 @@ class FunctionParamConfig extends ParamConfig {
           alias: alias,
           isPathParam: false,
           isQueryParam: false,
+          isInheritedPathParam: false,
           isNamed: isNamed,
           defaultValueCode: defaultValueCode,
-          element: element,
           isPositional: isPositional,
           hasRequired: hasRequired,
           isRequired: isRequired,
           isOptional: isOptional,
-          isInheritedPathParam: false,
         );
+
+  Map<String, dynamic> toJson() {
+    return {
+      // used for deserialization
+      'isFunctionParam': true,
+      'type': this.type.toJson(),
+      'returnType': this.returnType.toJson(),
+      'name': this.name,
+      'alias': this.alias,
+      'isPositional': this.isPositional,
+      'isOptional': this.isOptional,
+      'hasRequired': this.hasRequired,
+      'isRequired': this.isRequired,
+      'isNamed': this.isNamed,
+      'isPathParam': this.isPathParam,
+      'isQueryParam': this.isQueryParam,
+      'defaultValueCode': this.defaultValueCode,
+      'params': this.params.map((e) => e.toJson()).toList(),
+    };
+  }
+
+  factory FunctionParamConfig.fromJson(Map<String, dynamic> map) {
+    final params = <ParamConfig>[];
+    if (map['params'] != null) {
+      for (final pJson in map['params']) {
+        params.add(ParamConfig.fromJson(pJson));
+      }
+    }
+    return FunctionParamConfig(
+      type: ResolvedType.fromJson(map['type']),
+      returnType: ResolvedType.fromJson(map['returnType']),
+      name: map['name'] as String,
+      params: params,
+      alias: map['alias'] as String?,
+      isPositional: map['isPositional'] as bool,
+      isOptional: map['isOptional'] as bool,
+      hasRequired: map['hasRequired'] as bool,
+      isRequired: map['isRequired'] as bool,
+      isNamed: map['isNamed'] as bool,
+      defaultValueCode: map['defaultValueCode'] as String?,
+    );
+  }
 
   List<ParamConfig> get requiredParams =>
       params.where((p) => p.isPositional && !p.isOptional).toList();
@@ -135,4 +210,18 @@ class PathParamConfig {
   final bool isOptional;
 
   const PathParamConfig({required this.name, required this.isOptional});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': this.name,
+      'isOptional': this.isOptional,
+    };
+  }
+
+  factory PathParamConfig.fromJson(Map<String, dynamic> map) {
+    return PathParamConfig(
+      name: map['name'] as String,
+      isOptional: map['isOptional'] as bool,
+    );
+  }
 }

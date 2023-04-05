@@ -16,12 +16,15 @@ class AutoTabView extends StatefulWidget {
 
   const AutoTabView({
     Key? key,
+    required this.animatePageTransition,
     required this.controller,
     this.physics,
     required this.router,
     this.scrollDirection = Axis.horizontal,
     this.dragStartBehavior = DragStartBehavior.start,
   }) : super(key: key);
+
+  final bool animatePageTransition;
   final Axis scrollDirection;
   final TabController controller;
 
@@ -116,18 +119,18 @@ class AutoTabViewState extends State<AutoTabView> {
     }
 
     final Duration duration = _controller.animationDuration;
-
-    if (duration == Duration.zero) {
-      _pageController.jumpToPage(_currentIndex!);
-      return Future<void>.value();
-    }
+    final bool animatePageTransition = widget.animatePageTransition;
 
     final int previousIndex = _controller.previousIndex;
 
     if ((_currentIndex! - previousIndex).abs() == 1) {
       _warpUnderwayCount += 1;
-      await _pageController.animateToPage(_currentIndex!,
-          duration: duration, curve: Curves.ease);
+      if (animatePageTransition) {
+        await _pageController.animateToPage(_currentIndex!,
+            duration: duration, curve: Curves.ease);
+      } else {
+        _pageController.jumpToPage(_currentIndex!);
+      }
       _warpUnderwayCount -= 1;
       return Future<void>.value();
     }
@@ -145,8 +148,12 @@ class AutoTabViewState extends State<AutoTabView> {
     });
     _pageController.jumpToPage(initialPage);
 
-    await _pageController.animateToPage(_currentIndex!,
-        duration: duration, curve: Curves.ease);
+    if (animatePageTransition) {
+      await _pageController.animateToPage(_currentIndex!,
+          duration: duration, curve: Curves.ease);
+    } else {
+      _pageController.jumpToPage(_currentIndex!);
+    }
     if (!mounted) return Future<void>.value();
     setState(() {
       _warpUnderwayCount -= 1;
@@ -184,15 +191,6 @@ class AutoTabViewState extends State<AutoTabView> {
 
   @override
   Widget build(BuildContext context) {
-    assert(() {
-      if (_controller.length != widget.router.pageCount) {
-        throw FlutterError(
-          "Controller's length property (${_controller.length}) does not match the "
-          "number of tabs (${widget.router.pageCount}) present in TabsRouter pages count.",
-        );
-      }
-      return true;
-    }());
     return NotificationListener<ScrollNotification>(
       onNotification: _handleScrollNotification,
       child: ExpandablePageView(

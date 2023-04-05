@@ -1,13 +1,11 @@
+import 'package:auto_route_generator/src/builders/auto_route_builder.dart';
+import 'package:auto_route_generator/src/builders/auto_router_builder.dart';
 import 'package:build/build.dart';
-import 'package:source_gen/source_gen.dart';
 
-import 'auto_route_generator.dart';
+Builder autoRouterBuilder(BuilderOptions options) {
+  return AutoRouterBuilder(options: options);
+}
 
-Builder autoRouteGenerator(BuilderOptions options) {
-  // gr stands for generated router.
-  return LibraryBuilder(
-    AutoRouteGenerator(),
-    header: '',
-    generatedExtension: '.gr.dart',
-  );
+Builder autoRouteBuilder(BuilderOptions options) {
+  return AutoRouteBuilder(options: options);
 }

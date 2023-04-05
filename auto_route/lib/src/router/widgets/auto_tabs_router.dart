@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import '../../../auto_route.dart';
 
 typedef AnimatedIndexedStackBuilder = Widget Function(
+    BuildContext context, Widget child);
+typedef AnimatedIndexedStackTransitionBuilder = Widget Function(
     BuildContext context, Widget child, Animation<double> animation);
 typedef AutoTabsBuilder = Widget Function(
     BuildContext context, List<Widget> children, TabsRouter tabsRouter);
@@ -41,6 +43,7 @@ abstract class AutoTabsRouter extends StatefulWidget {
     Duration duration,
     Curve curve,
     AnimatedIndexedStackBuilder? builder,
+    AnimatedIndexedStackTransitionBuilder transitionBuilder,
     int homeIndex,
     bool inheritNavigatorObservers,
     NavigatorObserversBuilder navigatorObservers,
@@ -66,6 +69,7 @@ abstract class AutoTabsRouter extends StatefulWidget {
     required List<PageRouteInfo> routes,
     AutoTabsTabBarBuilder? builder,
     int homeIndex,
+    bool animatePageTransition,
     Duration? duration,
     Axis scrollDirection,
     Curve curve,
@@ -113,8 +117,8 @@ abstract class _AutoTabsRouterState extends State<AutoTabsRouter> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final parentRoute = RouteData.of(context);
+    final parentScope = RouterScope.of(context, watch: true);
     if (_controller == null) {
-      final parentScope = RouterScope.of(context, watch: true);
       _inheritableObserversBuilder = () {
         var observers = widget.navigatorObservers();
         if (!widget.inheritNavigatorObservers) {
@@ -156,9 +160,15 @@ abstract class _AutoTabsRouterState extends State<AutoTabsRouter> {
 // -----------------------------------------------------------
 class _AutoTabsRouterIndexedStack extends AutoTabsRouter {
   final AnimatedIndexedStackBuilder? builder;
+  final AnimatedIndexedStackTransitionBuilder transitionBuilder;
   final Duration duration;
   final Curve curve;
   final bool lazyLoad;
+
+  static Widget _defaultTransitionBuilder(
+      _, Widget child, Animation<double> animation) {
+    return FadeTransition(opacity: animation, child: child);
+  }
 
   const _AutoTabsRouterIndexedStack({
     Key? key,
@@ -167,6 +177,7 @@ class _AutoTabsRouterIndexedStack extends AutoTabsRouter {
     this.duration = const Duration(milliseconds: 300),
     this.curve = Curves.ease,
     this.builder,
+    this.transitionBuilder = _defaultTransitionBuilder,
     int homeIndex = -1,
     bool inheritNavigatorObservers = true,
     NavigatorObserversBuilder navigatorObservers =
@@ -275,21 +286,28 @@ class _AutoTabsRouterIndexedStackState extends _AutoTabsRouterState
       child: TabsRouterScope(
         controller: _controller!,
         stateHash: stateHash,
-        child: AnimatedBuilder(
-          animation: _animation,
-          builder: (context, child) => builder(
+        child: Builder(builder: (context) {
+          return builder(
             context,
-            child ?? builderChild,
-            _animation,
-          ),
-          child: builderChild,
-        ),
+            AnimatedBuilder(
+              animation: _animation,
+              child: builderChild,
+              builder: (context, child) {
+                return typedWidget.transitionBuilder(
+                  context,
+                  child!,
+                  _animation,
+                );
+              },
+            ),
+          );
+        }),
       ),
     );
   }
 
-  Widget _defaultBuilder(_, child, animation) {
-    return FadeTransition(opacity: animation, child: child);
+  Widget _defaultBuilder(_, child) {
+    return child;
   }
 }
 
@@ -481,6 +499,8 @@ class AutoTabsRouterPageViewState extends _AutoTabsRouterState
           return builder(
             context,
             AutoPageView(
+              animatePageTransition: typedWidget.animatePageTransition,
+              duration: typedWidget.duration,
               scrollDirection: typedWidget.scrollDirection,
               physics: typedWidget.physics,
               dragStartBehavior: typedWidget.dragStartBehavior,
@@ -508,17 +528,20 @@ class AutoTabsRouterPageViewState extends _AutoTabsRouterState
 
 class _AutoTabsRouterTabBar extends AutoTabsRouter {
   final AutoTabsTabBarBuilder? builder;
+  final bool animatePageTransition;
   final Duration? duration;
   final Curve curve;
   final ScrollPhysics? physics;
   final DragStartBehavior dragStartBehavior;
   final Axis scrollDirection;
+
   const _AutoTabsRouterTabBar({
     Key? key,
     required List<PageRouteInfo> routes,
     this.scrollDirection = Axis.horizontal,
     this.builder,
     int homeIndex = -1,
+    this.animatePageTransition = true,
     this.duration,
     this.curve = Curves.ease,
     bool inheritNavigatorObservers = true,
@@ -568,6 +591,7 @@ class _AutoTabsRouterTabBarState extends _AutoTabsRouterState
 
   void _updateTabController() {
     _tabController = TabController(
+      animationDuration: typedWidget.duration,
       initialIndex: _controller!.activeIndex,
       length: _controller!.pageCount,
       vsync: this,
@@ -606,6 +630,7 @@ class _AutoTabsRouterTabBarState extends _AutoTabsRouterState
           return builder(
             context,
             AutoTabView(
+              animatePageTransition: typedWidget.animatePageTransition,
               scrollDirection: typedWidget.scrollDirection,
               physics: typedWidget.physics,
               dragStartBehavior: typedWidget.dragStartBehavior,

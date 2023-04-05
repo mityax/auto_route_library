@@ -1,4 +1,51 @@
 # ChangeLog
+## [6.0.5]
+- Fix RouteMatch.fullPath is not joined properly
+- Add helper method to get route match PageRouteInfo().match(context)
+## [6.0.4]
+- Fix inherited path params are not working in v6
+- Add option to used cached_builds for more optimized generation
+## [6.0.3]
+- include merged pr's 
+- ## [6.0.2]
+- Make AutoRoute.path call save
+## [6.0.1]
+- Fix bug when with nested parent routes without and generated-path #1411
+## [6.0.0+1]
+- Use updated readme file
+## [6.0.0]
+- Fix secondAnimation value is always 0 in custom route transition
+## [6.0.0-rc-7]
+- Fix fullscreenDialog and maintainState flags are not passing to route data
+## [6.0.0-rc-6] 
+- Fix topMostRouter is not always called on root-scope
+## [6.0.0-rc-5] Breaking
+- Fix but with new AutoTabsRouter.transition builder
+- rename AutoRouteBuilder to auto_route_generator in build.yaml file to follow naming convention [breaking]
+## [6.0.0-rc-4] 
+- Fix android back button closes App
+- Add check for root routes must start with '/' or "*"
+## [6.0.0-rc-3] Breaking
+- Add transition builder to AutoTabsRouter and AutoTabsScaffold to only rebuild the body for animation and remove animation property from builder [breaking]
+- Add router.currentHierarchy() helper method for debugging and testing. 
+- Add keepHistory flag to AutoRoute(), to remove route from stack on pushNext
+## [6.0.0-rc-2]
+- Fix CustomRoute.opaque not working
+## [6.0.0-rc-1] 
+- Add path property to CustomRoute,CupertinoRoute and AdaptiveRoute
+- Add functionality to push path states to browser history and read it
+## [6.0.0-rc] Breaking
+make sure you check the [Migration guide](https://github.com/Milad-Akarie/auto_route_library/tree/v6.0.0_redesigned#migrating-to-v60)  
+- AutoRoute now takes a PageInfo object from the generated routes instead of Type
+- Introduce @RoutePage() annotation to annotate routable widgets 
+- Routes are defined in the body of the router class instead of inside the annotation
+- Remove replace @MaterialAutoRouter,@CupertinoAutoRouter ...etc with @AutoRouterConfig annotation
+- Remove EmptyRouterPage & EmptyRouterScreen 
+- "initial" flag is removed now, use "/" for initial routes or empty path "" for nested-initial routes.
+- Passing route guards is also changed now, instead of passing guards as types you now pass instances.
+- Add title builder for AutoRoute(title: (ctx,data){})
+- Docs are changed to reflect the new changes so make sure you re-read them. 
+ ---
 ## [5.0.4]
 - Fix #1288
 ## [5.0.3]
