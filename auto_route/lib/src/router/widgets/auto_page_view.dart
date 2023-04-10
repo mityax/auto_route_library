@@ -1,6 +1,7 @@
 /// Most of the code here is taking from flutter's [TabView]
 
 import 'package:auto_route/auto_route.dart';
+import 'package:expandable_page_view/expandable_page_view.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -135,7 +136,7 @@ class AutoPageViewState extends State<AutoPageView> {
   Widget build(BuildContext context) {
     return NotificationListener<ScrollNotification>(
       onNotification: _handleScrollNotification,
-      child: PageView(
+      child: ExpandablePageView(
         dragStartBehavior: widget.dragStartBehavior,
         controller: _controller,
         physics: widget.physics == null
