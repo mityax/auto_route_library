@@ -3,7 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-import 'eager_page_view.dart';
+import 'eager_expandable_page_view.dart';
+
 
 /// Most of the code here is taking from flutter's [TabView]
 class AutoPageView extends StatefulWidget {
@@ -191,7 +192,7 @@ class AutoPageViewState extends State<AutoPageView> {
   Widget build(BuildContext context) {
     return NotificationListener<ScrollNotification>(
       onNotification: _handleScrollNotification,
-      child: EagerPageView(
+      child: EagerExpandablePageView(
         scrollDirection: widget.scrollDirection,
         dragStartBehavior: widget.dragStartBehavior,
         cacheExtent: _children.length,

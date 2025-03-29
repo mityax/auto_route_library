@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 import 'package:auto_route/auto_route.dart';
-import 'package:auto_route/src/router/widgets/eager_page_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+
+import 'eager_expandable_page_view.dart';
 
 /// The adjustments made to this code from [TabView] is to fix children not
 /// updating in sync with TabRouter changes
@@ -245,7 +246,7 @@ class AutoTabViewState extends State<AutoTabView> {
   Widget build(BuildContext context) {
     return NotificationListener<ScrollNotification>(
       onNotification: _handleScrollNotification,
-      child: EagerPageView(
+      child: EagerExpandablePageView(
         cacheExtent: _children.length,
         scrollDirection: widget.scrollDirection,
         dragStartBehavior: widget.dragStartBehavior,
