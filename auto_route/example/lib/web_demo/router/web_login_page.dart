@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 class WebLoginPage extends StatelessWidget {
   final ValueChanged<bool>? onResult;
 
-  const WebLoginPage({Key? key, this.onResult}) : super(key: key);
+  const WebLoginPage({super.key, this.onResult});
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +17,9 @@ class WebLoginPage extends StatelessWidget {
         child: ElevatedButton(
           onPressed: () {
             App.of(context).authService.isAuthenticated = true;
+            if (onResult != null) {
+              onResult!(true);
+            }
           },
           child: Text('Login'),
         ),

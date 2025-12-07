@@ -8,9 +8,7 @@ import 'package:flutter/material.dart';
 
 @RoutePage()
 class HomePage extends StatefulWidget {
-  const HomePage({
-    Key? key,
-  }) : super(key: key);
+  const HomePage({super.key});
 
   @override
   HomePageState createState() => HomePageState();
@@ -31,12 +29,12 @@ class RouteDestination {
 class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final destinations = [
     RouteDestination(
-      route: booksTab(),
+      route: BooksTab(),
       icon: Icons.source,
       label: 'Books',
     ),
     RouteDestination(
-      route: profileTab(),
+      route: ProfileTab(),
       icon: Icons.person,
       label: 'Profile',
     ),
@@ -98,20 +96,13 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 appBar: AppBar(
                   leading: AutoLeadingButton(),
                   title: Text(context.topRoute.title(context)),
-                  // leading: AutoLeadingButton(ignorePagelessRoutes: true),
                   // bottom: TabBar(
                   //   controller: controller,
-                  //   tabs: [
-                  //     for (final d in destinations)
-                  //       Tab(
-                  //         child: Text(d.label),
-                  //       )
-                  //   ],
+                  //   tabs: [for (final d in destinations) Tab(child: Text(d.label))],
                   // ),
                 ),
                 body: child,
-                bottomNavigationBar:
-                    buildBottomNav(context, context.tabsRouter),
+                bottomNavigationBar: buildBottomNav(context, context.tabsRouter),
               );
             },
           );
@@ -145,7 +136,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
 @RoutePage()
 class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({Key? key}) : super(key: key);
+  const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

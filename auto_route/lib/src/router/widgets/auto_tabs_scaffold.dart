@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 /// Signature for a function that takes in [BuildContext] and [TabsRouter]
 /// and returns a PreferredSizeWidget usually an AppBar
-typedef AppBarBuilder = PreferredSizeWidget Function(
+typedef AppBarBuilder = PreferredSizeWidget? Function(
   BuildContext context,
   TabsRouter tabsRouter,
 );
@@ -140,8 +140,7 @@ class AutoTabsScaffold extends StatelessWidget {
     this.transitionBuilder,
     this.bottomNavigationBuilder,
     this.inheritNavigatorObservers = true,
-    this.navigatorObservers =
-        AutoRouterDelegate.defaultNavigatorObserversBuilder,
+    this.navigatorObservers = AutoRouterDelegate.defaultNavigatorObserversBuilder,
     this.floatingActionButton,
     this.floatingActionButtonBuilder,
     this.floatingActionButtonLocation,
@@ -201,8 +200,7 @@ class AutoTabsScaffold extends StatelessWidget {
           onDrawerChanged: onDrawerChanged,
           endDrawerEnableOpenDragGesture: endDrawerEnableOpenDragGesture,
           onEndDrawerChanged: onEndDrawerChanged,
-          floatingActionButton: floatingActionButton ??
-              floatingActionButtonBuilder?.call(context, tabsRouter),
+          floatingActionButton: floatingActionButton ?? floatingActionButtonBuilder?.call(context, tabsRouter),
           floatingActionButtonAnimator: floatingActionButtonAnimator,
           floatingActionButtonLocation: floatingActionButtonLocation,
           bottomSheet: bottomSheet,

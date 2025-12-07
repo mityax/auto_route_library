@@ -1,3 +1,43 @@
+## 10.4.0
+-- **Chore**: update auto_route constrains to ^11.0.0
+## 10.3.1
+- **REFACTOR**: Update analyzer dependency and migrate from `element2` to `element`
+## 10.3.0
+- **CHORE**: add support for analyzer 9.x.x
+- **CHORE**: update dependencies
+## 10.2.6
+- **FIX**: correctly handle parameter names by removing leading underscores
+## 10.2.5
+- **FIX**: respect page.opaque for transparent route.
+- **FIX**: handle dart:xxx.xxx.dart imports in type resolution (af60d79) when using lean_builder
+- **REFACTOR**: introduce _genericRef function for improved type reference handling (d5ecf13)
+- **FIX**: respect page.opaque for transparent route (52b71b7)
+- **FIX**: Use immutable array for pending child routes, fixes #2210 (beb3ce0)
+- **CHORE**:: extend support to analyzer 8 (b2cb61d)
+## 10.2.4
+- **CHORE**: tidy up dependencies and sync with updated analyzer version.
+- **FIX**: Add indexed stack semantics
+- **FIX**: Allow PopCompleter to complete during route reevaluation when pop-completers are disabled
+## 10.2.3
+- **FIX**: Fix collecting config files takes a bit too long (Optimization).
+## 10.2.2
+- **FIX**: Fix files with no @RoutePage annotation should not generate empty output when using lean_builder;
+## 10.2.1
+- **FEAT**: Add experimental support for lean_builder
+## 10.2.0 - skip
+## 10.1.0
+- **FEAT**: Expose routeTraversalEdgeBehavior property from the underlying Navigator to allow
+  customization of navigation stack edge behavior.
+- **FIX**: Improve focus and semantics handling in AutoTabsRouter IndexedStack to exclude inactive
+  tabs from focus traversal and semantics tree while preserving widget state.
+- **FIX**: Fix tab routes observing issue where initiating tabs can be reported twice.
+- **FIX**: Fix a couple core reevaluation issues.
+- **FIX**: Generated code is not properly formatted #2174
+- **FIX**: Fixed PageRouteInfo equality check regression introduced in v10.0.1 when using code
+  generation with argsEquality: false, which now defaults to true. The equality operator no longer
+  compares args by default unless argsEquality: true is explicitly set in AutoRouterConfig. This
+  restores compatibility with previous versions and prevents navigation test failures due to custom
+  argument classes lacking a proper == override.
 ## 10.0.1
 - **CHORE**: change build_runner constrains to ^2.4.11
 ## 10.0.0 [Minor Breaking Changes]

@@ -62,6 +62,7 @@ class AutoPageViewState extends State<AutoPageView> {
   late final TabsRouter _router = widget.router;
   late List<Widget> _children;
   int _warpUnderwayCount = 0;
+  int _scrollUnderwayCount = 0;
   final _tabKeys = <int, GlobalKey<KeepAliveTabState>>{};
 
   @override
@@ -96,8 +97,10 @@ class AutoPageViewState extends State<AutoPageView> {
   /// Preload the page at [index]
   bool preload(int index) {
     final didPreload = _tabKeys[index]?.currentState?.preload() == true;
-    if (didPreload) {
-      _updateChildren();
+    if (didPreload && mounted) {
+      setState(() {
+        _updateChildren();
+      });
     }
     return didPreload;
   }
@@ -114,7 +117,7 @@ class AutoPageViewState extends State<AutoPageView> {
     );
   }
 
-  _disposeInactiveChildren() {
+  void _disposeInactiveChildren() {
     for (int i = 0; i < _tabKeys.length; i++) {
       if (i != _router.activeIndex) {
         _tabKeys[i]?.currentState?.unloadIfRequired();
@@ -122,56 +125,74 @@ class AutoPageViewState extends State<AutoPageView> {
     }
   }
 
-  Future<void> _warpToCurrentIndex() async {
-    if (!mounted) return Future<void>.value();
+  void _jumpToPage(int page) {
+    _warpUnderwayCount += 1;
+    _controller.jumpToPage(page);
+    _warpUnderwayCount -= 1;
+  }
 
-    final Duration duration = widget.duration;
-    final bool animatePageTransition = widget.animatePageTransition;
+  Future<void> _animateToPage(int page) async {
+    _warpUnderwayCount += 1;
+    await _controller.animateToPage(page, duration: widget.duration, curve: Curves.ease);
+    _warpUnderwayCount -= 1;
+  }
 
-    final int previousIndex = _router.previousIndex ?? 0;
-    if ((_router.activeIndex - previousIndex).abs() == 1) {
-      _warpUnderwayCount += 1;
-      if (animatePageTransition) {
-        await _controller.animateToPage(_router.activeIndex,
-            duration: duration, curve: Curves.ease);
-      } else {
-        _controller.jumpToPage(_router.activeIndex);
-      }
-      _warpUnderwayCount -= 1;
-      return Future<void>.value();
+  Future<void> _warpToAdjacentTab() async {
+    if (widget.animatePageTransition) {
+      await _animateToPage(_router.activeIndex);
+    } else {
+      _jumpToPage(_router.activeIndex);
     }
+
+    return Future<void>.value();
+  }
+
+  Future<void> _warpToNonAdjacentTab() async {
+    final int previousIndex = _router.previousIndex ?? 0;
     assert((_router.activeIndex - previousIndex).abs() > 1);
-    final int initialPage = _router.activeIndex > previousIndex
-        ? _router.activeIndex - 1
-        : _router.activeIndex + 1;
-    _disposeInactiveChildren();
+    final int initialPage = _router.activeIndex > previousIndex ? _router.activeIndex - 1 : _router.activeIndex + 1;
+
     setState(() {
-      _warpUnderwayCount += 1;
       _children = List<Widget>.of(_children, growable: false);
       final Widget temp = _children[initialPage];
       _children[initialPage] = _children[previousIndex];
       _children[previousIndex] = temp;
     });
-    _controller.jumpToPage(initialPage);
+    _jumpToPage(initialPage);
 
-    if (animatePageTransition) {
-      await _controller.animateToPage(_router.activeIndex,
-          duration: duration, curve: Curves.ease);
+    if (widget.animatePageTransition) {
+      await _animateToPage(_router.activeIndex);
     } else {
-      _controller.jumpToPage(_router.activeIndex);
+      _jumpToPage(_router.activeIndex);
     }
+  }
+
+  Future<void> _warpToCurrentIndex() async {
     if (!mounted) return Future<void>.value();
-    setState(() {
-      _warpUnderwayCount -= 1;
-    });
+
+    _disposeInactiveChildren();
+    final int previousIndex = _router.previousIndex ?? 0;
+
+    final bool adjacentDestination = (_router.activeIndex - previousIndex).abs() == 1;
+    if (adjacentDestination) {
+      await _warpToAdjacentTab();
+    } else {
+      await _warpToNonAdjacentTab();
+    }
+    if (mounted) {
+      setState(() {
+        _updateChildren();
+      });
+    }
   }
 
   // Called when the PageView scrolls
   bool _handleScrollNotification(ScrollNotification notification) {
-    if (_warpUnderwayCount > 0) return false;
+    if (_warpUnderwayCount > 0 || _scrollUnderwayCount > 0) {
+      return false;
+    }
     if (notification.depth != 0) return false;
-    _warpUnderwayCount += 1;
-
+    _scrollUnderwayCount += 1;
     if (notification is ScrollUpdateNotification) {
       final currentPage = _controller.page!.round();
       _router.setActiveIndex(currentPage);
@@ -184,7 +205,7 @@ class AutoPageViewState extends State<AutoPageView> {
         }
       }
     }
-    _warpUnderwayCount -= 1;
+    _scrollUnderwayCount -= 1;
     return false;
   }
 
@@ -209,8 +230,7 @@ class AutoPageViewState extends State<AutoPageView> {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties
-        .add(DiagnosticsProperty<PageController>('controller', _controller));
+    properties.add(DiagnosticsProperty<PageController>('controller', _controller));
     properties.add(DiagnosticsProperty<TabsRouter>('router', _router));
     properties.add(IntProperty('activeIndex', _router.activeIndex));
     properties.add(IntProperty('previousIndex', _router.previousIndex));

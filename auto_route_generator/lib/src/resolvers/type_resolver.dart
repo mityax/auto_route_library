@@ -1,10 +1,8 @@
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/nullability_suffix.dart'
-    show NullabilitySuffix;
-import 'package:analyzer/dart/element/type.dart'
-    show DartType, ParameterizedType, RecordType;
+import 'package:analyzer/dart/element/nullability_suffix.dart' show NullabilitySuffix;
+import 'package:analyzer/dart/element/type.dart' show DartType, ParameterizedType, RecordType;
+import 'package:auto_route_generator/build_utils.dart';
 import 'package:auto_route_generator/src/models/resolved_type.dart';
-import 'package:auto_route_generator/utils.dart';
 import 'package:path/path.dart' as p;
 
 const _unPreferredImports = {'dart:ui'};
@@ -23,25 +21,22 @@ class TypeResolver {
   /// Resolved the import path of the given [element]
   String? resolveImport(Element? element) {
     // return early if source is null or element is a core type
-    if (libs.isEmpty || element?.source == null || _isCoreDartType(element!)) {
+    if (libs.isEmpty || element?.library?.uri == null || _isCoreDartType(element!)) {
       return null;
     }
 
     final fallBackImports = <String>{};
     for (var lib in libs) {
-      if (!_isCoreDartType(lib) &&
-          lib.exportNamespace.definedNames.values.contains(element)) {
-        final uri = lib.source.uri;
+      if (!_isCoreDartType(lib) && lib.exportNamespace.definedNames2.values.contains(element)) {
+        final uri = lib.uri;
         if (_unPreferredImports.contains(uri.toString())) {
           fallBackImports.add(uri.toString());
           continue;
         }
         if (uri.scheme == 'asset') {
-          return _assetToPackage(lib.source.uri);
+          return _assetToPackage(lib.uri);
         }
-        return targetFile == null
-            ? lib.identifier
-            : _relative(uri, targetFile!);
+        return targetFile == null ? lib.uri.toString() : _relative(uri, targetFile!);
       }
     }
     return fallBackImports.firstOrNull;
@@ -66,16 +61,12 @@ class TypeResolver {
 
   String _relative(Uri fileUri, Uri to) {
     var libName = to.pathSegments.first;
-    if ((to.scheme == 'package' &&
-            fileUri.scheme == 'package' &&
-            fileUri.pathSegments.first == libName) ||
+    if ((to.scheme == 'package' && fileUri.scheme == 'package' && fileUri.pathSegments.first == libName) ||
         (to.scheme == 'asset' && fileUri.scheme != 'package')) {
       if (fileUri.path == to.path) {
         return fileUri.pathSegments.last;
       } else {
-        return p.posix
-            .relative(fileUri.path, from: to.path)
-            .replaceFirst('../', '');
+        return p.posix.relative(fileUri.path, from: to.path).replaceFirst('../', '');
       }
     } else {
       return fileUri.toString();
@@ -83,7 +74,7 @@ class TypeResolver {
   }
 
   bool _isCoreDartType(Element element) {
-    return element.source?.fullName == 'dart:core';
+    return element.library?.uri.toString() == 'dart:core';
   }
 
   List<ResolvedType> _resolveTypeArguments(DartType typeToCheck) {
@@ -91,19 +82,17 @@ class TypeResolver {
     if (typeToCheck is RecordType) {
       for (final recordField in typeToCheck.positionalFields) {
         types.add(ResolvedType(
-          name: recordField.type.element?.name ?? 'void',
+          name: recordField.type.element?.displayName ?? 'void',
           import: resolveImport(recordField.type.element),
-          isNullable:
-              recordField.type.nullabilitySuffix == NullabilitySuffix.question,
+          isNullable: recordField.type.nullabilitySuffix == NullabilitySuffix.question,
           typeArguments: _resolveTypeArguments(recordField.type),
         ));
       }
       for (final recordField in typeToCheck.namedFields) {
         types.add(ResolvedType(
-          name: recordField.type.element?.name ?? 'void',
+          name: recordField.type.element?.displayName ?? 'void',
           import: resolveImport(recordField.type.element),
-          isNullable:
-              recordField.type.nullabilitySuffix == NullabilitySuffix.question,
+          isNullable: recordField.type.nullabilitySuffix == NullabilitySuffix.question,
           typeArguments: _resolveTypeArguments(recordField.type),
           nameInRecord: recordField.name,
         ));
@@ -112,7 +101,7 @@ class TypeResolver {
       for (DartType type in typeToCheck.typeArguments) {
         if (type is RecordType) {
           types.add(ResolvedType.record(
-            name: type.element?.name ?? 'void',
+            name: type.nameWithoutSuffix,
             import: resolveImport(type.element),
             isNullable: type.nullabilitySuffix == NullabilitySuffix.question,
             typeArguments: _resolveTypeArguments(type),
@@ -121,7 +110,7 @@ class TypeResolver {
           types.add(ResolvedType(name: 'dynamic'));
         } else {
           types.add(ResolvedType(
-            name: type.element?.name ?? 'void',
+            name: type.element?.displayName ?? 'void',
             import: resolveImport(type.element),
             isNullable: type.nullabilitySuffix == NullabilitySuffix.question,
             typeArguments: _resolveTypeArguments(type),

@@ -5,3 +5,6 @@ formatter:
 linter:
   rules:
     public_member_api_docs: false
+    avoid_print: false
+    unawaited_futures: true
+

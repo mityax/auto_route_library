@@ -1,5 +1,4 @@
-import 'package:auto_route/auto_route.dart'
-    show RouteMatch, StackRouter, UrlState;
+import 'package:auto_route/auto_route.dart' show RouteMatch, StackRouter, UrlState;
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 
@@ -15,16 +14,21 @@ class NavigationHistoryImpl extends NavigationHistory {
   final StackRouter router;
 
   final _entries = <_HistoryEntry>[];
+  bool _isNavigatingBack = false;
 
   @override
   void onNewUrlState(UrlState newState, {bool notify = true}) {
     super.onNewUrlState(newState, notify: notify);
     if (_currentUrl == newState.url) return;
+
+    // Don't add entries during back navigation to prevent duplicates
+    if (_isNavigatingBack) return;
+
     _addEntry(newState);
   }
 
   @override
-  bool get canNavigateBack => length > 1;
+  bool get canNavigateBack => length > 1 && !_isNavigatingBack;
 
   @override
   int get length => _entries.length;
@@ -34,6 +38,13 @@ class NavigationHistoryImpl extends NavigationHistory {
   void _addEntry(UrlState urlState) {
     if (!urlState.hasSegments) return;
     final route = UrlState.toHierarchy(urlState.segments);
+    final newEntry = _HistoryEntry(route, urlState.url);
+
+    // Prevent adding duplicate consecutive entries
+    if (_entries.isNotEmpty && _entries.last.url == urlState.url) {
+      return;
+    }
+
     // limit history registration to 20 entries
     if (_entries.length > 20) {
       _entries.removeAt(0);
@@ -41,26 +52,31 @@ class NavigationHistoryImpl extends NavigationHistory {
     if (urlState.shouldReplace && length > 0) {
       _entries.removeLast();
     }
-    _entries.add(_HistoryEntry(route, urlState.url));
+    _entries.add(newEntry);
   }
 
   @override
   void back() {
     if (canNavigateBack) {
+      _isNavigatingBack = true;
       _entries.removeLast();
-      router.navigateAll([_entries.last.route]);
+
+      if (_entries.isEmpty) {
+        _isNavigatingBack = false;
+        return;
+      }
+
+      router.navigateAll([_entries.last.route]).whenComplete(() => _isNavigatingBack = false);
     }
   }
 
   @override
   void forward() {
-    throw FlutterError(
-        'forward navigation is not supported for non-web platforms');
+    throw FlutterError('forward navigation is not supported for non-web platforms');
   }
 
   @override
-  Object? get pathState =>
-      throw FlutterError('pathState is not supported for non-web platforms');
+  Object? get pathState => throw FlutterError('pathState is not supported for non-web platforms');
 
   @override
   void pushPathState(Object? state) {
@@ -76,10 +92,7 @@ class _HistoryEntry {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is _HistoryEntry &&
-          runtimeType == other.runtimeType &&
-          url == other.url;
+      identical(this, other) || other is _HistoryEntry && runtimeType == other.runtimeType && url == other.url;
 
   @override
   int get hashCode => url.hashCode;

@@ -1,10 +1,91 @@
+## 11.0.0 [Breaking Changes]
+
+- **BREAKING CHANGE**: The `redirectUntil` method now returns `void` instead of `Future<T?>` and
+  handles the completion of the pop completer internally
+- **BREAKING CHANGE**: The `redirect` method in `AutoRouteGuard` has been renamed to `redirectUntil`
+  to better reflect its behavior and avoid confusion
+- **BREAKING CHANGE**: Removed deprecated APIs: `navigateNamed`, `popForced`, `replaceNamed`,
+  `pushNamed`, and `navigateNamedTo`. Use `navigatePath`, `pop`, `replacePath`, `pushPath` instead
+
+## 10.3.0
+
+- **FEAT**: Correct back-navigation behavior with proper state tracking
+- **FEAT**: Add async support and debug labels to `AutoRouteGuard`
+- **FEAT**: Add `checkGuard` method to `NavigationResolver` for sequential guard execution
+- **FEAT**: Implement comprehensive navigation history tracking with proper state management
+- **FEAT**: Prevent duplicate consecutive entries in navigation history
+
+## 10.2.3
+
+- **REFACTOR**: Preserve match ID on route updates to prevent breaking child controllers during
+  route updates or when replacing a route, fixes #2294
+- **FIX**: AutoTabsRouter.tabBar: Switching non-adjacent tabs shows the initial tab briefly when
+  tapping a tab then swiping, instead of the tab you're swiping toward, fixes #2283
+- **REFACTOR**: Simplify PagelessRoutesObserver and address pop flicker by using the more efficient
+  `didChangeTop` callback
+
+## 10.2.2
+
+- **FIX**: known predictive back gesture issues.
+- **FIX**: add meta import to routing_controller.dart because some flutter versions require it.
+
+## 10.2.1
+
+- **FIX**: correctly handle parameter names by removing leading underscores
+- **Enhance**: appBarBuilder in AutoTabsScaffold can return null now
+- **FIX**: Fix WASM type mismatch.
+
+## 10.2.0
+
+- **FIX**: respect page.opaque for transparent route.
+- **FIX**: handle dart:xxx.xxx.dart imports in type resolution (af60d79) when using lean_builder
+- **REFACTOR**: introduce _genericRef function for improved type reference handling (d5ecf13)
+- **FIX**: respect page.opaque for transparent route (52b71b7)
+- **FIX**: Use immutable array for pending child routes, fixes #2210 (beb3ce0)
+- **CHORE**:: extend support to analyzer 8 (b2cb61d)
+
+## 10.1.2
+
+- **FIX**: routing_controller.dart missing meta import
+
+## 10.1.1
+
+- **CHORE**: tidy up dependencies and sync with updated analyzer version.
+- **FIX**: Add indexed stack semantics
+- **FIX**: Allow PopCompleter to complete during route reevaluation when pop-completers are disabled
+
+## 10.1.0+1
+
+- **FEAT**: Add experimental support for lean_builder
+
+## 10.1.0
+
+- **FEAT**: Expose routeTraversalEdgeBehavior property from the underlying Navigator to allow
+  customization of navigation stack edge behavior.
+- **FIX**: Improve focus and semantics handling in AutoTabsRouter IndexedStack to exclude inactive
+  tabs from focus traversal and semantics tree while preserving widget state.
+- **FIX**: Fix tab routes observing issue where initiating tabs can be reported twice.
+- **FIX**: Fix a couple core reevaluation issues.
+- **FIX**: Generated code is not properly formatted #2174
+- **FIX**: Fixed PageRouteInfo equality check regression introduced in v10.0.1 when using code
+  generation with argsEquality: false, which now defaults to true. The equality operator no longer
+  compares args by default unless argsEquality: true is explicitly set in AutoRouterConfig. This
+  restores compatibility with previous versions and prevents navigation test failures due to custom
+  argument classes lacking a proper == override.
+
 ## 10.0.1
- - **REFACTOR**(custom_route): update route duration type from int to Duration.
- - **FEAT**: add onGeneratePath callback to RootStackRouter to allow custom path generation.
+
+- **REFACTOR**(custom_route): update route duration type from int to Duration.
+- **FEAT**: add onGeneratePath callback to RootStackRouter to allow custom path generation.
+
 ## 10.0.0 [Minor Breaking Changes]
-- **BREAKING CHANGE**: DeepLink and DeepLink.path will now use 'navigate' instead of push unless specified
-- **BREAKING CHANGE**: ActiveGuardObserver.value will now return a GuardEntry instead of an AutoRouteGuard, use 'activeGuards' to get the list of active guards
-- **FEAT**: add support for using auto_route with out code generation using NamedRouteDef and NamedRoute
+
+- **BREAKING CHANGE**: DeepLink and DeepLink.path will now use 'navigate' instead of push unless
+  specified
+- **BREAKING CHANGE**: ActiveGuardObserver.value will now return a GuardEntry instead of an
+  AutoRouteGuard, use 'activeGuards' to get the list of active guards
+- **FEAT**: add support for using auto_route with out code generation using NamedRouteDef and
+  NamedRoute
   otherwise.
 - **FEAT**: add support for android's predictive back gesture
 - **FEAT**: optional args equality by setting AutoRouterConfig(argsEquality: true)
@@ -27,7 +108,8 @@
 - **FEAT**: Parameters.getList now supports a default value
 - **FIX**: Add required keyword to named required parameters in function parameters' arguments
 - **FIX**: fix inheritPathParam didn't use the .inherit constructor
-- **REFACTOR** rename a couple of apis (popForced -> pop, pushNamed -> pushPath, replaceNamed -> replacePath, navigateNamed -> navigatePath, pathParams -> params)
+- **REFACTOR** rename a couple of apis (popForced -> pop, pushNamed -> pushPath, replaceNamed ->
+  replacePath, navigateNamed -> navigatePath, pathParams -> params)
 
 ## 9.3.0+1
 
@@ -73,7 +155,6 @@ No changes, changelog fix only.
   inside the router. implementing AutoRouteGuard is no longer supported.
 - **BREAKING CHANGE**: `AutoRouterConfig.module` is removed as it's no longer
   needed. `PageRouteInfos` are now self-contained.
--
 
 For more info read the complete migration guide
 [Migrating to v9](https://github.com/Milad-Akarie/auto_route_library/blob/master/migrations/migrating_to_v9.md)

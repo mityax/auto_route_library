@@ -51,20 +51,29 @@ class AgeInputRouteArgs {
   String toString() {
     return 'AgeInputRouteArgs{key: $key, onAgeSubmitted: $onAgeSubmitted}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! AgeInputRouteArgs) return false;
+    return key == other.key && onAgeSubmitted == other.onAgeSubmitted;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ onAgeSubmitted.hashCode;
 }
 
 /// generated route for
 /// [_i1.MainScreen]
 class MainRoute extends _i2.PageRouteInfo<void> {
-  const MainRoute({List<_i2.PageRouteInfo>? children})
-      : super(MainRoute.name, initialChildren: children);
+  const MainRoute({List<_i2.PageRouteInfo>? children}) : super(MainRoute.name, initialChildren: children);
 
   static const String name = 'MainRoute';
 
   static _i2.PageInfo page = _i2.PageInfo(
     name,
     builder: (data) {
-      return _i1.MainScreen();
+      return const _i1.MainScreen();
     },
   );
 }
@@ -107,6 +116,16 @@ class NameInputRouteArgs {
   String toString() {
     return 'NameInputRouteArgs{key: $key, onNameSubmitted: $onNameSubmitted}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! NameInputRouteArgs) return false;
+    return key == other.key && onNameSubmitted == other.onNameSubmitted;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ onNameSubmitted.hashCode;
 }
 
 /// generated route for
@@ -155,4 +174,14 @@ class ResultRouteArgs {
   String toString() {
     return 'ResultRouteArgs{key: $key, profile: $profile, onReset: $onReset}';
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ResultRouteArgs) return false;
+    return key == other.key && profile == other.profile && onReset == other.onReset;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ profile.hashCode ^ onReset.hashCode;
 }
